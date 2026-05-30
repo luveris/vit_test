@@ -336,6 +336,26 @@ const tests = [
 tests.forEach(t =>
     createTable(t[0], t[1], t[2])
 );
+const thresholds = {
+    "Витамин А": [10,20],
+    "Витамин B1": [10,20],
+    "Витамин B2": [7,14],
+    "Витамин B3": [10,20],
+    "Витамин B5": [5,10],
+    "Витамин B6": [5,10],
+    "Витамин B7": [5,10],
+    "Витамин B9": [5,10],
+    "Витамин B12": [5,10],
+    "Витамин C": [7,14],
+    "Витамин D": [7,14],
+    "Витамин E": [5,10],
+    "Витамин K": [7,14],
+    "Омега-3": [5,10],
+    "Омега-6": [5,10],
+    "Цинк": [5,10],
+    "Железо": [5,10],
+    "Магний": [5,10]
+};
 
 function calculate(){
 
@@ -356,45 +376,20 @@ function calculate(){
         let status;
         let cssClass;
 
-        const largeScale = [
-            "Витамин А",
-            "Витамин B1",
-            "Витамин B3",
-            "Витамин C",
-            "Витамин D",
-            "Витамин K"
-        ];
+        const [normalMax, warningMax] = thresholds[t[0]];
 
-        if(largeScale.includes(t[0])){
-
-            if(sum<=10){
-                status="Норма";
-                cssClass="normal";
-            }
-            else if(sum<=20){
-                status="Возможный дефицит";
-                cssClass="warning";
-            }
-            else{
-                status="Предполагаемый дефицит";
-                cssClass="danger";
-            }
-
-        }else{
-
-            if(sum<=5){
-                status="Норма";
-                cssClass="normal";
-            }
-            else if(sum<=10){
-                status="Возможный дефицит";
-                cssClass="warning";
-            }
-            else{
-                status="Предполагаемый дефицит";
-                cssClass="danger";
-            }
-        }
+if(sum <= normalMax){
+    status = "Норма";
+    cssClass = "normal";
+}
+else if(sum <= warningMax){
+    status = "Возможный дефицит";
+    cssClass = "warning";
+}
+else{
+    status = "Предполагаемый дефицит";
+    cssClass = "danger";
+}
 
         html += `
         <div class="result-item ${cssClass}">
