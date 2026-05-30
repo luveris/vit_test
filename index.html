@@ -1,0 +1,418 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Тест на дефицит витаминов</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:"Segoe UI",sans-serif;
+    background:linear-gradient(135deg,#667eea,#764ba2);
+    padding:30px 15px;
+    color:#333;
+}
+
+.container{
+    max-width:1100px;
+    margin:auto;
+}
+
+h1{
+    text-align:center;
+    color:white;
+    font-size:42px;
+    margin-bottom:10px;
+}
+
+.subtitle{
+    text-align:center;
+    color:rgba(255,255,255,.9);
+    margin-bottom:40px;
+}
+
+.card{
+    background:white;
+    border-radius:20px;
+    padding:15px;
+    margin-bottom:25px;
+    box-shadow:0 10px 30px rgba(0,0,0,.15);
+    transition:.3s;
+}
+
+.card:hover{
+    transform:translateY(-3px);
+}
+
+h2{
+    margin-bottom:15px;
+    color:#444;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    table-layout:fixed;
+}
+
+.question{
+    width:70%;
+    text-align:left;
+    font-size:14px;
+    line-height:1.2;
+}
+
+th:not(:first-child),
+td:not(:first-child){
+    width:6%;
+    text-align:center;
+}
+
+th{
+    background:#667eea;
+    color:white;
+    padding:10px;
+}
+
+td{
+    padding:10px;
+    text-align:center;
+    border-bottom:1px solid #eee;
+}
+
+.question{
+    text-align:left;
+    font-weight:500;
+}
+
+input[type="radio"]{
+    width:20px;
+    height:20px;
+    cursor:pointer;
+    accent-color:#667eea;
+}
+
+.btn{
+    width:100%;
+    padding:18px;
+    border:none;
+    border-radius:15px;
+    font-size:20px;
+    font-weight:700;
+    color:white;
+    background:linear-gradient(45deg,#00c853,#69f0ae);
+    cursor:pointer;
+    box-shadow:0 10px 25px rgba(0,200,83,.3);
+    transition:.3s;
+}
+
+.btn:hover{
+    transform:translateY(-2px);
+}
+
+#results{
+    margin-top:30px;
+    background:white;
+    border-radius:20px;
+    padding:25px;
+    box-shadow:0 10px 30px rgba(0,0,0,.15);
+}
+
+.result-item{
+    margin:5px 0;
+    padding:8px 12px;
+    border-radius:12px;
+    font-size:14px;
+}
+
+.results-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+    gap:8px;
+}
+
+th,
+td{
+    text-align:center;
+    vertical-align:middle;
+}
+
+.question{
+    text-align:left;
+}
+
+.normal{
+    background:#e8f5e9;
+    color:#2e7d32;
+}
+
+.warning{
+    background:#fff8e1;
+    color:#f57c00;
+}
+
+.danger{
+    background:#ffebee;
+    color:#c62828;
+}
+
+@media(max-width:768px){
+
+    h1{
+        font-size:30px;
+    }
+
+    table{
+        font-size:13px;
+    }
+
+    td,th{
+        padding:6px;
+    }
+
+    .card{
+        padding:15px;
+    }
+}
+
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<h1>🧬 Тест на дефицит витаминов</h1>
+
+<p class="subtitle">
+Оцените каждый симптом по шкале от 0 до 4:
+<br>
+0 — нет • 1 — редко • 2 — иногда • 3 — часто • 4 — постоянно
+</p>
+
+<div id="tests"></div>
+
+<button class="btn" onclick="calculate()">
+📊 Посчитать результаты
+</button>
+
+<div id="results">
+Результаты появятся здесь после прохождения теста.
+</div>
+
+</div>
+
+<script>
+
+function createTable(title, questions, idPrefix){
+
+    let html = `
+        <div class="card">
+            <h2>${title}</h2>
+            <table>
+                <tr>
+                    <th>Симптом</th>
+                    <th>0</th>
+                    <th>1</th>
+                    <th>2</th>
+                    <th>3</th>
+                    <th>4</th>
+                </tr>
+    `;
+
+    questions.forEach((q,index)=>{
+
+        html += `
+            <tr>
+                <td class="question">${q}</td>
+        `;
+
+        for(let i=0;i<=4;i++){
+            html += `
+                <td>
+                    <div class="radio-cell">
+                        <input type="radio"
+                            name="${idPrefix}${index}"
+                        value="${i}">
+                    </div>
+                </td>
+            `;
+        }
+
+        html += `</tr>`;
+    });
+
+    html += `
+            </table>
+        </div>
+    `;
+
+    document.getElementById("tests").innerHTML += html;
+}
+
+const tests = [
+
+["Витамин А",
+["Веганская диета","Сухость в глазах","Сухие волосы","Сухая кожа","Экзема","Куриная слепота","Акне","Мягкий стул","Трещины на пятках","Сухость влагалища/размер яичек"],
+"a"],
+
+["Витамин B1",
+["Слабость в ногах","Боли в икрах","Сложно вставать с корточек","Сниженная чувствительность ног","Свисающая стопа","Дезориентация","Потеря зрения","Двойное зрение","Подергивания глаз","Атаксия"],
+"b1"],
+
+["Витамин B2",
+["Неадекватное питание/алкоголь","Жжение в глазах","Лопнувшие сосуды","Заеды","Борозды на языке","Красное горло","Шелушащаяся кожа"],
+"b2"],
+
+["Витамин B3",
+["Недомогание","Усталость","Плохой сон","Потеря памяти","Язвы во рту","Красное горло","Жжение в теле","Шелушащаяся кожа","Жжение в желудке","Проблемы со стулом"],
+"b3"],
+
+["Витамин B5",
+["Выпадение волос","Синяки","Жжение в ногах","Головные боли","Плохой сон"],
+"b5"],
+
+["Витамин B6",
+["Трещины в уголках рта","Красный язык","Гипервентиляция","Судороги рук","Напряженные мышцы"],
+"b6"],
+
+["Витамин B7",
+["Сложно расчесывать волосы","Выпадение волос","Красные глаза","Истончение волос на теле","Жир на лице"],
+"b7"],
+
+["Витамин B9",
+["Алкоголь/курение","Бледное лицо","Воспаленный язык","Бледная кожа","Синдром беспокойных ног"],
+"b9"],
+
+["Витамин B12",
+["Расстройства желудка","Веганство","Усталость","Бледное лицо","Боли в пояснице"],
+"b12"],
+
+["Витамин C",
+["Плохо контролирую эмоции","Подозрительность","Чувствительность к свету","Кровоточивость десен","Выпадение зубов","Синяки","Старческие пятна/зубы"],
+"c"],
+
+["Витамин D",
+["Редко на солнце","Опухание костей","Боли в костях","Мышечные боли","Болезненные точки","Болезненность в ногах","Искривление спины"],
+"d"],
+
+["Витамин E",
+["Чувствительность к свету","Атрофия мышц","Мышечные боли","Некоординированные движения","Преждевременное старение"],
+"e"],
+
+["Витамин K",
+["Кровоизлияния в глаза","Носовые кровотечения","Кровотечения десен","Синяки","Сутулость","Отложение кальция","Обильные менструации"],
+"k"],
+
+["Омега-3",
+["Жажда","Частое мочеиспускание","Дефицит внимания","Изоляция","Повторение слов"],
+"o3"],
+
+["Омега-6",
+["Сухие волосы","Выпадение волос","Сухая кожа","Трещины на пятках","Тусклые ногти"],
+"o6"],
+
+["Цинк",
+["Пониженное обоняние","Снижение вкуса","Растяжки на коже","Акне","Белые точки на ногтях"],
+"zn"],
+
+["Железо",
+["Веганство","Усталость по вечерам","Выпадение волос","Бледность","Ломкие ногти"],
+"fe"],
+
+["Магний",
+["Усталость с утра","Напряжение мышц","Подергивания век","Судороги ног","Тахикардия"],
+"mg"]
+
+];
+
+tests.forEach(t =>
+    createTable(t[0], t[1], t[2])
+);
+
+function calculate(){
+
+    let html = "<h2>📋 Ваши результаты</h2><div class='results-grid'>";
+
+    tests.forEach(t=>{
+
+        let sum = 0;
+
+        let radios = document.querySelectorAll(
+            `input[name^="${t[2]}"]:checked`
+        );
+
+        radios.forEach(r =>
+            sum += parseInt(r.value)
+        );
+
+        let status;
+        let cssClass;
+
+        const largeScale = [
+            "Витамин А",
+            "Витамин B1",
+            "Витамин B3",
+            "Витамин C",
+            "Витамин D",
+            "Витамин K"
+        ];
+
+        if(largeScale.includes(t[0])){
+
+            if(sum<=10){
+                status="Норма";
+                cssClass="normal";
+            }
+            else if(sum<=20){
+                status="Возможный дефицит";
+                cssClass="warning";
+            }
+            else{
+                status="Предполагаемый дефицит";
+                cssClass="danger";
+            }
+
+        }else{
+
+            if(sum<=5){
+                status="Норма";
+                cssClass="normal";
+            }
+            else if(sum<=10){
+                status="Возможный дефицит";
+                cssClass="warning";
+            }
+            else{
+                status="Предполагаемый дефицит";
+                cssClass="danger";
+            }
+        }
+
+        html += `
+        <div class="result-item ${cssClass}">
+            <strong>${t[0]}</strong><br>
+            ${sum} баллов — ${status}
+        </div>`;
+    });
+
+    html += "</div>";
+    document.getElementById("results").innerHTML = html;
+
+    window.scrollTo({
+        top: document.body.scrollHeight,
+        behavior: "smooth"
+    });
+}
+
+</script>
+
+</body>
+</html>
