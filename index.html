@@ -207,6 +207,37 @@ td{
 Результаты появятся здесь после прохождения теста.
 </div>
 
+<h3 style="
+    margin-top:25px;
+    color:white;
+">
+📝 Дополнительная информация
+</h3>
+
+<textarea
+    id="comment"
+    placeholder="Опишите ваши симптомы, жалобы, результаты анализов или задайте вопрос..."
+    rows="8"
+    style="
+        width:100%;
+        margin-top:10px;
+        padding:15px;
+        border:none;
+        border-radius:15px;
+        font-size:15px;
+        resize:vertical;
+        box-shadow:0 10px 30px rgba(0,0,0,.15);
+    ">
+</textarea>
+
+<button
+    class="btn"
+    onclick="sendResults()"
+    style="margin-top:15px;"
+>
+📧 Отправить результаты
+</button>
+
 </div>
 
 <script>
@@ -328,7 +359,7 @@ const tests = [
 "fe"],
 
 ["Магний",
-["Усталость с самого утра","Напряженные мышцы лица и пояснично-крестцовой зоны","Частые подергивания мышц век","Спазмы, судороги мышц ног, ступней","ТНеравномерное сердцебиение (тахикардия)"],
+["Усталость с самого утра","Напряженные мышцы лица и пояснично-крестцовой зоны","Частые подергивания мышц век","Спазмы, судороги мышц ног, ступней","Неравномерное сердцебиение (тахикардия)"],
 "mg"]
 
 ];
@@ -359,7 +390,29 @@ const thresholds = {
 
 function calculate(){
 
-    let html = "<h2>📋 Ваши результаты</h2><div class='results-grid'>";
+    const groups = new Set();
+
+    document
+        .querySelectorAll('input[type="radio"]')
+        .forEach(r => groups.add(r.name));
+
+    for(const name of groups){
+
+        const checked = document.querySelector(
+            `input[name="${name}"]:checked`
+        );
+
+        if(!checked){
+
+            alert(
+                "Пожалуйста, ответьте на все вопросы теста."
+            );
+
+            return;
+        }
+    }
+
+    let html =  "<h2>📋 Ваши результаты</h2><div class='results-grid'>";
 
     tests.forEach(t=>{
 
@@ -407,7 +460,109 @@ else{
     });
 }
 
+async function sendResults(){
+
+    const results =
+        document.getElementById("results").innerText;
+
+    const comment =
+        document.getElementById("comment").value.trim();
+
+    if(
+        results.includes(
+            "Результаты появятся здесь"
+        )
+    ){
+        alert(
+            "Сначала рассчитайте результаты."
+        );
+        return;
+    }
+
+    const now = new Date();
+
+    const report = `
+Дата заполнения:
+${now.toLocaleString("ru-RU")}
+
+==============================
+
+РЕЗУЛЬТАТЫ ТЕСТА
+
+${results}
+
+==============================
+
+ДОПОЛНИТЕЛЬНАЯ ИНФОРМАЦИЯ
+
+${comment || "Не указана"}
+
+==============================
+`;
+
+    try{
+
+        const response = await fetch(
+            "https://formspree.io/f/mrevkvor",
+            {
+                method:"POST",
+                headers:{
+                    "Content-Type":"application/json",
+                    "Accept":"application/json"
+                },
+                body:JSON.stringify({
+                    message: report
+                })
+            }
+        );
+
+        if(response.ok){
+
+            document.getElementById(
+                "results"
+            ).innerHTML = `
+                <div style="
+                    background:#e8f5e9;
+                    color:#2e7d32;
+                    padding:20px;
+                    border-radius:15px;
+                    text-align:center;
+                    font-weight:600;
+                ">
+                    ✅ Спасибо! Результаты успешно отправлены.
+                </div>
+            `;
+
+            document
+                .getElementById("comment")
+                .value = "";
+
+            window.scrollTo({
+                top:document.body.scrollHeight,
+                behavior:"smooth"
+            });
+
+        }else{
+
+            alert(
+                "Ошибка отправки. Попробуйте ещё раз."
+            );
+
+        }
+
+    }catch(error){
+
+        alert(
+            "Не удалось отправить данные."
+        );
+
+    }
+
+}
+
 </script>
+
+
 
 </body>
 </html>
