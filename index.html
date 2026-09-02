@@ -62,6 +62,11 @@ table{
     table-layout:fixed;
 }
 
+/* Плавное изменение цвета строк */
+tr {
+    transition: background-color 0.4s ease;
+}
+
 .question{
     width:70%;
     text-align:left;
@@ -123,7 +128,7 @@ input[type="radio"]{
     border-radius:20px;
     padding:25px;
     box-shadow:0 10px 30px rgba(0,0,0,.15);
-    display: none; /* Скрываем блок до получения результатов */
+    display: none;
 }
 
 .result-item{
@@ -164,7 +169,6 @@ td{
     border: 1px solid #ffcdd2;
 }
 
-/* Стили для блока призыва к действию (CTA) */
 .cta-block {
     background: linear-gradient(135deg, #667eea, #764ba2);
     color: white;
@@ -259,10 +263,11 @@ function createTable(title, questions, idPrefix){
                 <td class="question">${q}</td>
         `;
         for(let i=0;i<=4;i++){
+            // onchange убирает красную подсветку, как только человек кликает на вариант
             html += `
                 <td>
                     <div class="radio-cell">
-                        <input type="radio" name="${idPrefix}${index}" value="${i}">
+                        <input type="radio" name="${idPrefix}${index}" value="${i}" onchange="this.closest('tr').style.backgroundColor=''">
                     </div>
                 </td>
             `;
@@ -355,12 +360,35 @@ function calculate(){
         .querySelectorAll('input[type="radio"]')
         .forEach(r => groups.add(r.name));
 
+    let hasMissed = false;
+    let firstMissedRow = null;
+
     for(const name of groups){
         const checked = document.querySelector(`input[name="${name}"]:checked`);
+        
+        // Если вопрос пропущен
         if(!checked){
-            alert("Пожалуйста, ответьте на все вопросы теста.");
-            return;
+            hasMissed = true;
+            const missedInput = document.querySelector(`input[name="${name}"]`);
+            const missedRow = missedInput.closest("tr");
+            
+            // Сохраняем самый первый пропущенный вопрос для скролла
+            if(!firstMissedRow) {
+                firstMissedRow = missedRow;
+            }
+            
+            // Подсвечиваем все пропущенные строки красным
+            missedRow.style.backgroundColor = "#ffebee";
         }
+    }
+
+    // Если есть пропущенные вопросы
+    if(hasMissed){
+        alert("Пожалуйста, ответьте на все вопросы теста. Пропущенные строки подсвечены красным.");
+        if(firstMissedRow) {
+            firstMissedRow.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+        return; // Останавливаем подсчет
     }
 
     let html = "<h2>📋 Ваши результаты</h2><div id='results-content' class='results-list'>";
@@ -402,7 +430,6 @@ function calculate(){
 
     html += "</div>";
 
-    // Блок призыва к действию с ссылкой на Telegram
     html += `
     <div class="cta-block">
         <h3>Хотите разобраться точнее?</h3>
@@ -413,7 +440,7 @@ function calculate(){
 
     const resBlock = document.getElementById("results");
     resBlock.innerHTML = html;
-    resBlock.style.display = "block"; // Показываем блок с результатами
+    resBlock.style.display = "block";
 
     window.scrollTo({
         top: resBlock.offsetTop - 20,
